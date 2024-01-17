@@ -1,0 +1,47 @@
+parameters:
+  - name: organizations
+    type: object
+  - name: serviceConnectionName
+    type: string
+  - name: storageAccountName
+    type: string
+  - name: backupContainerName
+    type: string
+
+jobs:
+- job: BackupJob
+  pool:
+    vmImage: windows-latest
+  variables:
+    backup_date: $[format('{0:yyyy}-{0:MM}-{0:dd}T{0:HH}-{0:mm}-{0:ss}', pipeline.startTime)]
+  steps:
+  - ${{ each organization in parameters.organizations }}:
+    - ${{ each project in organization.projects }}:
+      - ${{ each repository in project.repositories }}:
+        - task: PowerShell@2
+          inputs:
+            targetType: inline
+            script: git clone --mirror https://${{organization.personalAccessToken}}@dev.azure.com/${{organization.name}}/${{project.name}}/_git/${{repository}}
+          displayName: Git Clone
+        - task: ArchiveFiles@2
+          inputs:
+            rootFolderOrFile: $(System.DefaultWorkingDirectory)/${{repository}}.git
+            includeRootFolder: false
+            archiveType: zip
+            archiveFile : $(Build.ArtifactStagingDirectory)/${{repository}}.zip
+            replaceExistingArchive: true
+          displayName: Archive Repository
+        - task: AzureFileCopy@3
+          inputs:
+            sourcePath: $(Build.ArtifactStagingDirectory)/${{repository}}.zip
+            azureSubscription: ${{parameters.serviceConnectionName}}
+            destination: AzureBlob
+            storage: ${{parameters.storageAccountName}}
+            containerName : ${{parameters.backupContainerName}}
+            blobPrefix : ${{organization.name}}\${{project.name}}\$(backup_date)
+          displayName: Upload Repository
+        - task: PowerShell@2
+          inputs:
+            targetType: inline
+            script: rm ${{repository}}.git -r -force
+          displayName: Delete TempData

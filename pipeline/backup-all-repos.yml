@@ -1,0 +1,27 @@
+trigger:
+  none
+stages:
+  - stage: MAIN
+    jobs:
+      - template: templates/multi-repo-backup-template.yml
+        parameters:
+          organizations:
+          - name: 'your_organization_1' # CHANGE
+            personalAccessToken: 'your_pat_token1' # CHANGE
+            projects:
+              - name: 'your_project1' # CHANGE
+                repositories: 
+                - 'your_repo1' # CHANGE
+              - name: 'your_project2' # CHANGE
+                repositories: 
+                - 'your_repo2' # CHANGE
+          - name: 'your_organization2' # CHANGE
+            personalAccessToken: 'your_pat_token2' # CHANGE
+            projects:
+              - name: 'your_project3' # CHANGE
+                repositories: 
+                - 'your_repo3' # CHANGE
+                - 'your_repo4' # CHANGE
+          serviceConnectionName: 'your_service_connection_name' # CHANGE
+          storageAccountName: 'your_storage_account_name' # CHANGE
+          backupContainerName: 'your_container_name' # CHANGE
