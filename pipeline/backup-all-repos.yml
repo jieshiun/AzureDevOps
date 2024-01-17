@@ -6,7 +6,7 @@ stages:
       - template: templates/multi-repo-backup-template.yml
         parameters:
           organizations:
-          - name: 'your_organization_1' # CHANGE
+          - name: 'your_organization1' # CHANGE
             personalAccessToken: 'your_pat_token1' # CHANGE
             projects:
               - name: 'your_project1' # CHANGE
