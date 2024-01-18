@@ -19,7 +19,7 @@ jobs:
     - ${{ each project in organization.projects }}:
       - ${{ each repository in project.repositories }}:
         - task: PowerShell@2
-          displayName: GitCloneTask
+          displayName: "Git Clone ${{repository}}"
           continueOnError: true
           inputs:
             targetType: inline
