@@ -19,19 +19,23 @@ jobs:
     - ${{ each project in organization.projects }}:
       - ${{ each repository in project.repositories }}:
         - task: PowerShell@2
+          displayName: GitCloneTask
+          continueOnError: true
           inputs:
             targetType: inline
             script: git clone --mirror https://${{organization.personalAccessToken}}@dev.azure.com/${{organization.name}}/${{project.name}}/_git/${{repository}}
-          displayName: Git Clone
         - task: ArchiveFiles@2
+          displayName: "Archive Repository ${{repository}}"
+          continueOnError: true
           inputs:
             rootFolderOrFile: $(System.DefaultWorkingDirectory)/${{repository}}.git
             includeRootFolder: false
             archiveType: zip
             archiveFile : $(Build.ArtifactStagingDirectory)/${{repository}}.zip
             replaceExistingArchive: true
-          displayName: Archive Repository
         - task: AzureFileCopy@3
+          displayName: "Upload Repository ${{repository}}"
+          continueOnError: true
           inputs:
             sourcePath: $(Build.ArtifactStagingDirectory)/${{repository}}.zip
             azureSubscription: ${{parameters.serviceConnectionName}}
@@ -39,9 +43,9 @@ jobs:
             storage: ${{parameters.storageAccountName}}
             containerName : ${{parameters.backupContainerName}}
             blobPrefix : ${{organization.name}}\${{project.name}}\$(backup_date)
-          displayName: Upload Repository
         - task: PowerShell@2
+          displayName: "Delete TempData ${{repository}}"
+          continueOnError: true
           inputs:
             targetType: inline
             script: rm ${{repository}}.git -r -force
-          displayName: Delete TempData
